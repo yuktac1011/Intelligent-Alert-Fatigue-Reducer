@@ -95,12 +95,13 @@ export function TopologyGraph({ data }: { data: any }) {
   }, [data])
 
   return (
-    <div className="h-full w-full">
+    <div style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, zIndex: 10 }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
         fitView
+        style={{ width: '100%', height: '100%' }}
         proOptions={{ hideAttribution: true }}
         className="bg-transparent"
       >

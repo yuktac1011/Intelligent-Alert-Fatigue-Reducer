@@ -73,7 +73,7 @@ export default function Dashboard() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#050505] text-slate-200 flex flex-col font-sans overflow-hidden">
+    <div className="h-screen bg-[#050505] text-slate-200 flex flex-col font-sans overflow-hidden">
       
       {/* Intense Top Header */}
       <header className="border-b-2 border-cyan-500/30 bg-black/60 backdrop-blur-xl px-6 py-4 flex items-center justify-between sticky top-0 z-50">
@@ -159,9 +159,9 @@ export default function Dashboard() {
         <AnimatePresence mode="wait">
           {activeTab === 'live' && (
             <motion.div key="live" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex w-full h-full">
-              <div className="flex-1 relative bg-[#020202]">
+              <div className="flex-1 relative bg-[#020202] w-full h-full">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyan-900/10 via-[#050505] to-black z-0 pointer-events-none"></div>
-                <TopologyGraph data={topology} />
+                {topology.nodes.length > 0 && <TopologyGraph data={topology} />}
               </div>
               {incidents.length > 0 && (
                 <motion.div 
