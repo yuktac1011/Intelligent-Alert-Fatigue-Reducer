@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Beaker, Sliders, ArrowRight, Save, X } from 'lucide-react'
+import { API_URL } from '@/lib/config'
 
 export function WhatIfEngine() {
   const [loading, setLoading] = useState(false)
@@ -13,7 +14,7 @@ export function WhatIfEngine() {
   const runSimulation = async (scenario: string, params: any) => {
     setLoading(true)
     try {
-      const res = await fetch('http://localhost:8000/api/simulate/what-if', {
+      const res = await fetch(`${API_URL}/api/simulate/what-if`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ scenario, parameters: params })
@@ -42,7 +43,7 @@ export function WhatIfEngine() {
         {/* Scenario 1: DB Pool */}
         <div className="bg-black border border-white/10 p-6 shadow-[0_0_15px_rgba(255,255,255,0.02)]">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="font-black text-white tracking-widest uppercase text-sm">PostgreSQL Connection Pool</h3>
+            <h3 className="font-black text-white tracking-widest uppercase text-sm">Database Connection Pool</h3>
             <span className="px-2 py-1 bg-white/10 text-[9px] uppercase tracking-widest font-bold">Parameters</span>
           </div>
           

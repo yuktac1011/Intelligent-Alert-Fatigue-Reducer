@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, BellRing, Target, ArrowRight } from 'lucide-react'
+import { API_URL } from '@/lib/config'
 
 export function KryvenComparison({ onClose, incident }: { onClose: () => void, incident: any }) {
   const [showWithKryven, setShowWithKryven] = useState(false)
@@ -10,7 +11,7 @@ export function KryvenComparison({ onClose, incident }: { onClose: () => void, i
   useEffect(() => {
     const fetchMetrics = async () => {
       try {
-        const res = await fetch('http://localhost:8000/api/metrics/comparison')
+        const res = await fetch(`${API_URL}/api/metrics/comparison`)
         const data = await res.json()
         setMetrics(data)
       } catch (e) {

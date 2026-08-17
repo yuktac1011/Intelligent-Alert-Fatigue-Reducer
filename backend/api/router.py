@@ -103,9 +103,8 @@ async def process_event_background(event: TelemetryEvent):
             updated_at=cluster.updated_at
         )
         
-        if root_cause and root_cause.service == 'postgresql':
-            incident.title = "PostgreSQL Connection Pool Exhaustion"
-            
+        if root_cause:
+            incident.title = f"{root_cause.service.replace('-', ' ').title()} Degradation Detected"
         is_new = incident_id not in incidents_db
         incidents_db[incident_id] = incident
         

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { ShieldAlert, Activity, Filter, Clock } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { API_URL } from '@/lib/config'
 
 export function CooldownMatrix() {
   const [policies, setPolicies] = useState<any[]>([])
@@ -9,7 +10,7 @@ export function CooldownMatrix() {
   useEffect(() => {
     const fetchCooldown = async () => {
       try {
-        const res = await fetch('http://localhost:8000/api/cooldown')
+        const res = await fetch(`${API_URL}/api/cooldown`)
         const data = await res.json()
         setPolicies(data.policies || [])
       } catch (e) {

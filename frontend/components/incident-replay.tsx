@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Play, Pause, FastForward, Rewind, X, AlertTriangle, ShieldCheck } from 'lucide-react'
 import { TopologyGraph } from './topology-graph'
+import { API_URL } from '@/lib/config'
 
 export function IncidentReplay({ incident, baseTopology, onClose }: { incident: any, baseTopology: any, onClose: () => void }) {
   const [isPlaying, setIsPlaying] = useState(true)
@@ -13,7 +14,7 @@ export function IncidentReplay({ incident, baseTopology, onClose }: { incident: 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/api/incidents/${incident.id}/events`)
+        const res = await fetch(`${API_URL}/api/incidents/${incident.id}/events`)
         const data = await res.json()
         setEvents(data)
       } catch (e) {

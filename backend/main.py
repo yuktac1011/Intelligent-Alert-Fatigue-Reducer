@@ -5,10 +5,14 @@ from simulation.chaos import chaos_simulator
 
 app = FastAPI(title="Kryven API", description="Autonomous Incident Intelligence Platform")
 
+import os
+
+frontend_url = os.getenv("FRONTEND_URL", "*")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=[frontend_url] if frontend_url != "*" else ["*"],
+    allow_credentials=True if frontend_url != "*" else False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -23,10 +27,8 @@ async def health():
 
 @app.post("/api/chaos/{scenario}")
 async def trigger_chaos(scenario: str):
-    if scenario == "db-exhaustion":
-        await chaos_simulator.start_scenario(scenario)
-        return {"status": "started", "scenario": scenario}
-    return {"status": "not_found"}, 404
+    await chaos_simulator.start_scenario(scenario)
+    return {"status": "started", "scenario": scenario}
 
 if __name__ == "__main__":
     import uvicorn

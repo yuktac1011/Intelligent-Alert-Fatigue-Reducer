@@ -9,6 +9,7 @@ import { IncidentReplay } from '@/components/incident-replay'
 import { KryvenComparison } from '@/components/kryven-comparison'
 import { CooldownMatrix } from '@/components/cooldown-matrix'
 import { WhatIfEngine } from '@/components/what-if-engine'
+import { API_URL, WS_URL } from '@/lib/config'
 import { Activity, ShieldAlert, Zap, Network, SplitSquareHorizontal, Shield, Beaker } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -29,21 +30,21 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchMetrics = async () => {
       try {
-        const res = await fetch('http://localhost:8000/api/metrics/noise')
+        const res = await fetch(`${API_URL}/api/metrics/noise`)
         const data = await res.json()
         setMetrics(data)
       } catch (e) {}
     }
     const fetchTopology = async () => {
       try {
-        const res = await fetch('http://localhost:8000/api/topology')
+        const res = await fetch(`${API_URL}/api/topology`)
         const data = await res.json()
         setTopology(data)
       } catch (e) {}
     }
     const fetchIncidents = async () => {
       try {
-        const res = await fetch('http://localhost:8000/api/incidents')
+        const res = await fetch(`${API_URL}/api/incidents`)
         const data = await res.json()
         setIncidents(data)
       } catch (e) {}
@@ -53,7 +54,7 @@ export default function Dashboard() {
     fetchTopology()
     fetchIncidents()
 
-    const ws = new WebSocket('ws://localhost:8000/api/ws/events')
+    const ws = new WebSocket(`${WS_URL}/api/ws/events`)
     ws.onmessage = (event) => {
       const msg = JSON.parse(event.data)
       if (msg.type === 'incident_update') {

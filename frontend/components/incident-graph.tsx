@@ -1,6 +1,6 @@
 "use client"
 import { useState, useMemo } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Network, Activity, AlertTriangle, UserX, Database, Search } from 'lucide-react'
 
 export function IncidentGraphDeep({ incident }: { incident: any }) {
@@ -83,6 +83,7 @@ export function IncidentGraphDeep({ incident }: { incident: any }) {
       <AnimatePresence>
         {selectedEdge && (
           <motion.div 
+            key="edge-details-overlay"
             initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }}
             className="absolute bottom-4 left-4 right-4 bg-black/95 backdrop-blur-md border border-blue-500/50 p-6 rounded-xl shadow-[0_10px_40px_rgba(59,130,246,0.3)] z-50 flex items-start justify-between"
           >

@@ -1,6 +1,7 @@
 "use client"
 import { useState } from 'react'
 import { Flame, PlayCircle, Loader2 } from 'lucide-react'
+import { API_URL } from '@/lib/config'
 
 export function ChaosLab() {
   const [loading, setLoading] = useState(false)
@@ -9,7 +10,7 @@ export function ChaosLab() {
   const triggerScenario = async (id: string) => {
     setLoading(true)
     try {
-      await fetch(`http://localhost:8000/api/chaos/${id}`, { method: 'POST' })
+      await fetch(`${API_URL}/api/chaos/${id}`, { method: 'POST' })
       setActiveScenario(id)
     } catch (e) {
       console.error(e)
@@ -20,7 +21,7 @@ export function ChaosLab() {
   const scenarios = [
     {
       id: 'db-exhaustion',
-      name: 'PostgreSQL Pool Exhaustion',
+      name: 'Database Pool Exhaustion',
       desc: 'Simulates a connection pool saturation leading to timeouts, cascading upstream to Payment and Order services.',
       color: 'bg-rose-500'
     },
