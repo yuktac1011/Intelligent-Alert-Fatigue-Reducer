@@ -163,6 +163,28 @@ async def get_incident_timeline(incident_id: str):
 async def get_topology():
     return topology_engine.get_topology()
 
+@router.post("/incidents/{incident_id}/neutralize")
+async def neutralize_incident(incident_id: str):
+    if incident_id in incidents_db:
+        incident = incidents_db[incident_id]
+        incident.status = "resolved"
+        
+        # Heal the topology
+        rc_service = incident.root_cause.service if incident.root_cause else None
+        if rc_service:
+            topology_engine.update_node_metrics(rc_service, health="healthy", error_rate=0.0, latency=50.0)
+            
+        await manager.broadcast(json.dumps({
+            "type": "incident_update",
+            "data": json.loads(incident.json())
+        }))
+        await manager.broadcast(json.dumps({
+            "type": "topology_update",
+            "data": topology_engine.get_topology().dict()
+        }))
+        return {"status": "success"}
+    return {"error": "not found"}
+
 @router.get("/metrics/noise")
 async def get_noise_metrics():
     raw_alerts = len(events_db)

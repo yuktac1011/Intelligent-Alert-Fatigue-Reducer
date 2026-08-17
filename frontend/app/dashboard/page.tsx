@@ -168,7 +168,7 @@ export default function Dashboard() {
                   initial={{ x: 500, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ type: "spring", stiffness: 100, damping: 20 }}
-                  className="w-[500px] border-l-2 border-fuchsia-500/30 bg-black/80 backdrop-blur-3xl shadow-[-20px_0_50px_rgba(217,70,239,0.15)] z-20"
+                  className="absolute right-0 top-0 bottom-0 w-[500px] border-l-2 border-fuchsia-500/30 bg-black/80 backdrop-blur-3xl shadow-[-20px_0_50px_rgba(217,70,239,0.15)] z-20 flex flex-col"
                 >
                   <IncidentView incident={incidents[0]} />
                 </motion.div>
@@ -192,45 +192,47 @@ export default function Dashboard() {
                    <h2 className="text-3xl font-black text-cyan-900 tracking-widest uppercase">System Secure</h2>
                 </div>
               ) : (
-                <div className="max-w-5xl mx-auto space-y-8">
+                <div className="w-full space-y-8">
                   <h2 className="text-4xl font-black text-fuchsia-500 tracking-tighter drop-shadow-[0_0_15px_rgba(217,70,239,0.5)]">ACTIVE INCIDENTS</h2>
-                  {incidents.map((inc, i) => (
-                    <motion.div 
-                      initial={{ opacity: 0, x: -50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.1 }}
-                      key={inc.id} 
-                      className="bg-black border border-fuchsia-500/50 rounded-none p-8 hover:border-fuchsia-400 transition-all shadow-[0_0_30px_rgba(217,70,239,0.15)] group relative overflow-hidden"
-                    >
-                      <div className="absolute top-0 left-0 w-1 h-full bg-fuchsia-500 group-hover:w-2 transition-all"></div>
-                      <div className="flex justify-between items-start mb-8 pl-4">
-                        <div>
-                          <div className="flex items-center space-x-4 mb-4">
-                            <span className="px-3 py-1 bg-fuchsia-500 text-black text-xs font-black uppercase tracking-[0.3em]">{inc.severity}</span>
-                            <span className="text-fuchsia-500/70 text-sm font-mono tracking-widest">{inc.id}</span>
+                  <div className="grid grid-cols-1 2xl:grid-cols-2 gap-8">
+                    {incidents.map((inc, i) => (
+                      <motion.div 
+                        initial={{ opacity: 0, x: -50 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.1 }}
+                        key={inc.id} 
+                        className="bg-black border border-fuchsia-500/50 rounded-none p-8 hover:border-fuchsia-400 transition-all shadow-[0_0_30px_rgba(217,70,239,0.15)] group relative overflow-hidden flex flex-col"
+                      >
+                        <div className="absolute top-0 left-0 w-1 h-full bg-fuchsia-500 group-hover:w-2 transition-all"></div>
+                        <div className="flex justify-between items-start mb-8 pl-4">
+                          <div>
+                            <div className="flex items-center space-x-4 mb-4">
+                              <span className="px-3 py-1 bg-fuchsia-500 text-black text-xs font-black uppercase tracking-[0.3em]">{inc.severity}</span>
+                              <span className="text-fuchsia-500/70 text-sm font-mono tracking-widest">{inc.id}</span>
+                            </div>
+                            <h3 className="text-3xl font-black text-white tracking-tight leading-none mb-2">{inc.title}</h3>
+                            <p className="text-slate-500 text-sm font-mono mt-2">DETECTED: {new Date(inc.created_at).toLocaleTimeString()}</p>
                           </div>
-                          <h3 className="text-3xl font-black text-white tracking-tight leading-none mb-2">{inc.title}</h3>
-                          <p className="text-slate-500 text-sm font-mono mt-2">DETECTED: {new Date(inc.created_at).toLocaleTimeString()}</p>
+                          <div className="text-right border border-cyan-500/30 p-4 bg-cyan-950/20 rounded-lg shrink-0 ml-4">
+                            <p className="text-[10px] text-cyan-400 font-bold uppercase tracking-[0.2em] mb-1">Compression Ratio</p>
+                            <p className="text-4xl font-black text-cyan-400 drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]">{(inc.noise_reduction_ratio * 100).toFixed(1)}%</p>
+                          </div>
                         </div>
-                        <div className="text-right border border-cyan-500/30 p-4 bg-cyan-950/20 rounded-lg">
-                          <p className="text-[10px] text-cyan-400 font-bold uppercase tracking-[0.2em] mb-1">Compression Ratio</p>
-                          <p className="text-4xl font-black text-cyan-400 drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]">{(inc.noise_reduction_ratio * 100).toFixed(1)}%</p>
+                        
+                        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-8 flex-1">
+                          <div className="col-span-1 xl:h-[650px] min-h-[500px]">
+                            <AlertStormAnalysis incident={inc} onReplay={() => setReplayIncident(inc)} />
+                          </div>
+                          <div className="col-span-1 xl:h-[650px] min-h-[500px]">
+                            <EvidenceExplorer rootCause={inc.root_cause} />
+                          </div>
+                          <div className="col-span-1 xl:h-[650px] min-h-[500px] overflow-hidden bg-black/80 backdrop-blur-md border border-fuchsia-500/30">
+                            <IncidentView incident={inc} compact={true} />
+                          </div>
                         </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-3 gap-6 mt-8">
-                        <div className="col-span-1 h-[450px]">
-                          <AlertStormAnalysis incident={inc} onReplay={() => setReplayIncident(inc)} />
-                        </div>
-                        <div className="col-span-1 h-[450px]">
-                          <EvidenceExplorer rootCause={inc.root_cause} />
-                        </div>
-                        <div className="col-span-1 h-[450px] overflow-hidden bg-black/80 backdrop-blur-md border border-fuchsia-500/30">
-                          <IncidentView incident={inc} />
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
+                      </motion.div>
+                    ))}
+                  </div>
                 </div>
               )}
             </motion.div>

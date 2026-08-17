@@ -73,7 +73,7 @@ export function EvidenceExplorer({ rootCause }: { rootCause: any }) {
         </div>
       </div>
       
-      <div className="flex-1 space-y-5 overflow-y-auto pr-2 custom-scrollbar">
+      <div className="flex-1 space-y-5 overflow-y-auto pr-2 scrollbar-hide">
         {factors.map((factor, idx) => (
           <motion.div 
             initial={{ opacity: 0, x: -20 }}

@@ -2,13 +2,14 @@
 import { AlertCircle, Target, Activity, ShieldCheck } from 'lucide-react'
 import { motion } from 'framer-motion'
 
-export function IncidentView({ incident }: { incident: any }) {
+export function IncidentView({ incident, compact = false }: { incident: any, compact?: boolean }) {
   if (!incident) return null;
 
   return (
     <div className="flex flex-col h-full bg-transparent text-white font-sans">
-      <div className="p-8 border-b border-white/5 bg-black/40 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-fuchsia-500/10 blur-[50px]"></div>
+      {!compact && (
+        <div className="p-8 border-b border-white/5 bg-black/40 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-fuchsia-500/10 blur-[50px]"></div>
         
         <div className="flex justify-between items-center mb-6 relative z-10">
           <motion.span 
@@ -30,8 +31,9 @@ export function IncidentView({ incident }: { incident: any }) {
           <span>COMPRESSED {incident.raw_alerts_count} ALERTS → 1 INCIDENT</span>
         </div>
       </div>
+      )}
 
-      <div className="flex-1 overflow-y-auto p-8 space-y-8">
+      <div className={`flex-1 overflow-y-auto scrollbar-hide ${compact ? 'p-4 space-y-4' : 'p-8 space-y-8'}`}>
         
         {incident.root_cause && (
           <motion.div 
@@ -127,10 +129,19 @@ export function IncidentView({ incident }: { incident: any }) {
         
       </div>
       
-      <div className="p-6 bg-[#050505] border-t border-white/5">
-        <button className="w-full bg-fuchsia-600 hover:bg-fuchsia-500 text-black font-black tracking-widest uppercase py-4 rounded-none transition-all shadow-[0_0_20px_rgba(217,70,239,0.4)] hover:shadow-[0_0_40px_rgba(217,70,239,0.8)] flex items-center justify-center group">
-          Acknowledge & Neutralize
-          <Target className="w-5 h-5 ml-3 group-hover:scale-125 transition-transform" />
+      <div className={`${compact ? 'p-4' : 'p-6'} bg-[#050505] border-t border-white/5`}>
+        <button 
+          onClick={async () => {
+            try {
+              await fetch(`http://localhost:8000/api/incidents/${incident.id}/neutralize`, { method: 'POST' })
+            } catch (e) {}
+          }}
+          disabled={incident.status === 'resolved'}
+          className={`w-full font-black tracking-widest uppercase py-4 rounded-none transition-all flex items-center justify-center group
+            ${incident.status === 'resolved' ? 'bg-slate-800 text-slate-500 cursor-not-allowed' : 'bg-fuchsia-600 hover:bg-fuchsia-500 text-black shadow-[0_0_20px_rgba(217,70,239,0.4)] hover:shadow-[0_0_40px_rgba(217,70,239,0.8)]'}`}
+        >
+          {incident.status === 'resolved' ? 'Neutralized' : 'Acknowledge & Neutralize'}
+          <Target className={`w-5 h-5 ml-3 ${incident.status !== 'resolved' ? 'group-hover:scale-125 transition-transform' : ''}`} />
         </button>
       </div>
     </div>

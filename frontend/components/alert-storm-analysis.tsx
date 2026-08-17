@@ -58,8 +58,8 @@ export function AlertStormAnalysis({ incident, onReplay }: { incident: any, onRe
   ]
   
   return (
-    <div className="bg-black/60 border border-white/5 p-8 flex flex-col items-center justify-center min-h-[400px]">
-      <h3 className="text-xl font-black text-white tracking-tighter mb-8 uppercase text-center">
+    <div className="h-full bg-black/60 border border-white/5 p-4 xl:p-6 overflow-hidden flex flex-col items-center justify-start">
+      <h3 className="text-lg font-black text-white tracking-tighter mb-4 uppercase text-center shrink-0">
         Alert Storm Compression
       </h3>
       
@@ -76,28 +76,28 @@ export function AlertStormAnalysis({ incident, onReplay }: { incident: any, onRe
                 {idx > 0 && (
                   <motion.div 
                     initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 24, opacity: 1 }}
-                    className="w-[2px] bg-gradient-to-b from-white/20 to-white/5 my-2 flex items-center justify-center overflow-visible"
+                    animate={{ height: 16, opacity: 1 }}
+                    className="w-[2px] bg-gradient-to-b from-white/20 to-white/5 my-1 flex items-center justify-center overflow-visible shrink-0"
                   >
-                    <ArrowDown className="w-4 h-4 text-white/30 absolute translate-y-3" />
+                    <ArrowDown className="w-3 h-3 text-white/30 absolute translate-y-2" />
                   </motion.div>
                 )}
                 
-                <div className={`w-full ${step.bg} border ${step.border} p-6 flex items-center justify-between shadow-[0_0_15px_rgba(0,0,0,0.5)]`}>
-                  <div className="flex items-center space-x-4">
-                    <div className={`p-3 rounded-full bg-black/50 border ${step.border}`}>
-                      <step.icon className={`w-6 h-6 ${step.color}`} />
-                    </div>
-                    <span className="font-bold text-sm tracking-widest text-white/80">{step.label}</span>
-                  </div>
+                <div className={`w-full ${step.bg} border ${step.border} py-2 px-4 flex flex-col items-center justify-center shadow-[0_0_15px_rgba(0,0,0,0.5)] text-center rounded-lg`}>
+                  <step.icon className={`w-4 h-4 ${step.color} mb-1 opacity-80`} />
+                  
                   <motion.span 
                     initial={{ scale: 2, opacity: 0, filter: "blur(10px)" }}
                     animate={{ scale: 1, opacity: 1, filter: "blur(0px)" }}
                     transition={{ delay: 0.3, type: "spring" }}
-                    className={`text-4xl font-black font-mono ${step.color} drop-shadow-md`}
+                    className={`text-2xl font-black font-mono ${step.color} drop-shadow-md leading-none mb-1`}
                   >
                     {step.count}
                   </motion.span>
+                  
+                  <span className="font-bold text-[10px] tracking-[0.2em] text-white/60 leading-tight uppercase max-w-[150px]">
+                    {step.label}
+                  </span>
                 </div>
               </motion.div>
             )}
@@ -107,10 +107,10 @@ export function AlertStormAnalysis({ incident, onReplay }: { incident: any, onRe
         {stage === 3 && (
           <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }}
-            className="absolute top-1/2 left-full ml-12 -translate-y-1/2 w-48 text-center"
+            className="mt-4 pt-3 border-t border-cyan-500/30 text-center w-full shrink-0"
           >
-            <div className="text-[10px] font-bold text-cyan-500 tracking-[0.3em] uppercase mb-2">Noise Reduction</div>
-            <div className="text-6xl font-black text-cyan-400 font-mono drop-shadow-[0_0_20px_rgba(6,182,212,0.8)]">
+            <div className="text-[9px] font-bold text-cyan-500 tracking-[0.3em] uppercase mb-1">Noise Reduction</div>
+            <div className="text-3xl font-black text-cyan-400 font-mono drop-shadow-[0_0_20px_rgba(6,182,212,0.8)]">
               {(incident.noise_reduction_ratio * 100).toFixed(1)}%
             </div>
           </motion.div>
@@ -121,7 +121,7 @@ export function AlertStormAnalysis({ incident, onReplay }: { incident: any, onRe
         <motion.button 
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2 }}
           onClick={() => { setStage(0); if (onReplay) onReplay(); }}
-          className="mt-8 text-xs font-bold text-slate-500 hover:text-white uppercase tracking-widest transition-colors"
+          className="mt-4 text-[10px] font-bold text-slate-500 hover:text-white uppercase tracking-widest transition-colors shrink-0"
         >
           Replay Incident Sequence
         </motion.button>

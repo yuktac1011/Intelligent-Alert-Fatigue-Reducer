@@ -10,6 +10,14 @@ body {
   font-feature-settings: "rlig" 1, "calt" 1;
 }
 
+@utility scrollbar-hide {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* React Flow custom dark styles */
 .react-flow__node {
   border-radius: var(--radius);
