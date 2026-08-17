@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: kryven_db
+    environment:
+      POSTGRES_USER: kryven
+      POSTGRES_PASSWORD: kryven_password
+      POSTGRES_DB: kryven_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

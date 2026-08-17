@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+@theme {
+  --radius: 0.5rem;
+}
+
+body {
+  background-color: #020617; /* slate-950 */
+  color: #e2e8f0; /* slate-200 */
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+/* React Flow custom dark styles */
+.react-flow__node {
+  border-radius: var(--radius);
+}
+.react-flow__pane {
+  background-color: transparent !important;
+}
+.react-flow__controls button {
+  background-color: #0f172a !important; /* slate-900 */
+  color: #f8fafc !important; /* slate-50 */
+  border-color: #1e293b !important; /* slate-800 */
+}
