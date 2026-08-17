@@ -3,3 +3,6 @@ uvicorn[standard]
 networkx
 pydantic
 websockets
+scikit-learn
+sqlalchemy
+asyncpg
