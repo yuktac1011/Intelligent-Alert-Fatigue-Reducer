@@ -7,7 +7,9 @@ import { AlertStormAnalysis } from '@/components/alert-storm-analysis'
 import { EvidenceExplorer } from '@/components/evidence-explorer'
 import { IncidentReplay } from '@/components/incident-replay'
 import { KryvenComparison } from '@/components/kryven-comparison'
-import { Activity, ShieldAlert, Zap, Network, SplitSquareHorizontal } from 'lucide-react'
+import { CooldownMatrix } from '@/components/cooldown-matrix'
+import { WhatIfEngine } from '@/components/what-if-engine'
+import { Activity, ShieldAlert, Zap, Network, SplitSquareHorizontal, Shield, Beaker } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function Dashboard() {
@@ -123,6 +125,22 @@ export default function Dashboard() {
             Chaos Lab
           </button>
           
+          <button 
+            onClick={() => setActiveTab('cooldown')}
+            className={`px-4 py-2 rounded-md text-sm font-bold uppercase tracking-widest transition-all ${activeTab === 'cooldown' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.4)]' : 'text-slate-500 hover:text-cyan-300'} flex items-center`}
+          >
+            <Shield className="w-4 h-4 mr-2" />
+            Cooldown
+          </button>
+          
+          <button 
+            onClick={() => setActiveTab('what-if')}
+            className={`px-4 py-2 rounded-md text-sm font-bold uppercase tracking-widest transition-all ${activeTab === 'what-if' ? 'bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/50 shadow-[0_0_15px_rgba(217,70,239,0.4)]' : 'text-slate-500 hover:text-fuchsia-300'} flex items-center`}
+          >
+            <Beaker className="w-4 h-4 mr-2" />
+            What If
+          </button>
+          
           <div className="w-px h-6 bg-white/10 mx-2 self-center"></div>
           
           <button 
@@ -159,9 +177,31 @@ export default function Dashboard() {
         <AnimatePresence mode="wait">
           {activeTab === 'live' && (
             <motion.div key="live" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex w-full h-full">
-              <div className="flex-1 relative bg-[#020202] w-full h-full">
+              <div className="flex-1 relative bg-[#020202] w-full h-full flex flex-col">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyan-900/10 via-[#050505] to-black z-0 pointer-events-none"></div>
-                {topology.nodes.length > 0 && <TopologyGraph data={topology} />}
+                <div className="flex-1 relative">
+                  {topology.nodes.length > 0 && <TopologyGraph data={topology} />}
+                </div>
+                
+                {/* Timeline Sync Slider */}
+                {incidents.length > 0 && (
+                  <div className="h-24 border-t border-white/5 bg-black/80 backdrop-blur-xl p-4 flex flex-col justify-center relative z-10 mx-4 mb-4 rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.1)]">
+                    <div className="flex justify-between text-[10px] text-cyan-500 font-bold tracking-widest mb-2 uppercase">
+                      <span>Live Event Feed</span>
+                      <span>Timeline Sync Active</span>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      <input 
+                        type="range" 
+                        min="0" 
+                        max="100" 
+                        defaultValue="100"
+                        className="w-full h-1.5 bg-slate-800 rounded-full appearance-none cursor-not-allowed accent-cyan-500 opacity-50"
+                        title="Timeline scrubbing disabled in live mode. Use Replay Engine for historical analysis."
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
               {incidents.length > 0 && (
                 <motion.div 
@@ -179,6 +219,18 @@ export default function Dashboard() {
           {activeTab === 'chaos' && (
             <motion.div key="chaos" initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="flex-1 p-8 bg-[#050505] overflow-auto">
               <ChaosLab />
+            </motion.div>
+          )}
+
+          {activeTab === 'cooldown' && (
+            <motion.div key="cooldown" initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="flex-1 bg-[#050505] overflow-auto">
+              <CooldownMatrix />
+            </motion.div>
+          )}
+
+          {activeTab === 'what-if' && (
+            <motion.div key="what-if" initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="flex-1 bg-[#050505] overflow-auto">
+              <WhatIfEngine />
             </motion.div>
           )}
 

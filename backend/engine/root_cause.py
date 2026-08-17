@@ -28,7 +28,8 @@ class RootCauseEngine:
             anomaly_magnitude = 0.0
             propagation_strength = 0.0
             downstream_impact = 0.0
-            historical_correlation = 5.5 # Static mock for now
+            # Calculate a dynamic historical correlation score
+            historical_correlation = min(10.0, float(len(s)) * 0.5 + 2.0)
             
             explanation = []
             
@@ -102,7 +103,8 @@ class RootCauseEngine:
         )
         
         # Recommendation
-        if 'postgres' in best_service.lower() or 'db' in best_service.lower():
+        best_service_lower = best_service.lower()
+        if 'postgres' in best_service_lower or 'db' in best_service_lower:
             rec = Recommendation(
                 priority="P0",
                 actions=[
@@ -113,6 +115,30 @@ class RootCauseEngine:
                 confidence=best_score - 2,
                 reason="High volume of timeouts correlating with leaf-node DB saturation.",
                 supporting_evidence=f"{best_evidence.anomaly_magnitude}% anomaly magnitude in database tier"
+            )
+        elif 'redis' in best_service_lower or 'cache' in best_service_lower:
+            rec = Recommendation(
+                priority="P1",
+                actions=[
+                    "Inspect Redis eviction logs and memory utilization.",
+                    "Scale up Redis cache cluster if OOM limit reached.",
+                    "Review Auth service caching strategy."
+                ],
+                confidence=best_score - 4,
+                reason="Cache eviction storm causing upstream latency.",
+                supporting_evidence=f"Anomaly originating in {best_service}"
+            )
+        elif 'order' in best_service_lower or 'kafka' in best_service_lower:
+            rec = Recommendation(
+                priority="P0",
+                actions=[
+                    "Investigate network partition between Order service and Kafka.",
+                    "Check VPC/subnet routing rules for sudden drops.",
+                    "Ensure message buffer limits are sufficient to ride out short partitions."
+                ],
+                confidence=best_score - 3,
+                reason="Connection refused and message buffer exhaustion indicates likely network split.",
+                supporting_evidence=f"Dependency centrality score: {best_evidence.dependency_centrality}"
             )
         else:
             rec = Recommendation(

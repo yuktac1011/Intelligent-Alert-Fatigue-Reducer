@@ -1,27 +1,31 @@
 "use client"
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { Play, Pause, FastForward, Rewind, X } from 'lucide-react'
+import { useState, useEffect, useMemo } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Play, Pause, FastForward, Rewind, X, AlertTriangle, ShieldCheck } from 'lucide-react'
 import { TopologyGraph } from './topology-graph'
 
 export function IncidentReplay({ incident, baseTopology, onClose }: { incident: any, baseTopology: any, onClose: () => void }) {
   const [isPlaying, setIsPlaying] = useState(true)
   const [speed, setSpeed] = useState(1)
   const [progress, setProgress] = useState(0) // 0 to 100
-  const [currentStage, setCurrentStage] = useState(0)
-
-  const stages = [
-    { label: "SYSTEM HEALTHY", time: 0 },
-    { label: "FIRST ANOMALY DETECTED", time: 20 },
-    { label: "RESOURCE SATURATION", time: 40 },
-    { label: "DATABASE FAILURE", time: 60 },
-    { label: "DOWNSTREAM DEGRADATION", time: 80 },
-    { label: "ALERT STORM COMPRESSED", time: 100 }
-  ]
+  const [events, setEvents] = useState<any[]>([])
+  
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const res = await fetch(`http://localhost:8000/api/incidents/${incident.id}/events`)
+        const data = await res.json()
+        setEvents(data)
+      } catch (e) {
+        console.error(e)
+      }
+    }
+    fetchEvents()
+  }, [incident.id])
 
   useEffect(() => {
     let timer: NodeJS.Timeout
-    if (isPlaying && progress < 100) {
+    if (isPlaying && progress < 100 && events.length > 0) {
       timer = setInterval(() => {
         setProgress(prev => {
           const next = prev + (0.5 * speed)
@@ -34,24 +38,10 @@ export function IncidentReplay({ incident, baseTopology, onClose }: { incident: 
       }, 50)
     }
     return () => clearInterval(timer)
-  }, [isPlaying, progress, speed])
+  }, [isPlaying, progress, speed, events.length])
 
-  useEffect(() => {
-    // Determine stage based on progress
-    let stageIndex = 0
-    for (let i = stages.length - 1; i >= 0; i--) {
-      if (progress >= stages[i].time) {
-        stageIndex = i
-        break
-      }
-    }
-    setCurrentStage(stageIndex)
-  }, [progress])
-
-  // Derive topology state based on progress
-  const deriveTopology = () => {
-    const rcService = incident.root_cause?.service || 'postgresql'
-    
+  // Derive topology state based on progress and real events
+  const simulatedTopology = useMemo(() => {
     // Deep clone base topology
     const nodes = JSON.parse(JSON.stringify(baseTopology.nodes || []))
     const edges = JSON.parse(JSON.stringify(baseTopology.edges || []))
@@ -60,37 +50,44 @@ export function IncidentReplay({ incident, baseTopology, onClose }: { incident: 
     nodes.forEach((n: any) => { n.health = 'healthy'; n.error_rate = 0; n.latency = 50 })
     edges.forEach((e: any) => { e.error_propagation = false })
     
-    if (progress >= 20) {
-      const rcNode = nodes.find((n: any) => n.id === rcService)
-      if (rcNode) { rcNode.health = 'warning'; rcNode.latency = 250 }
-    }
+    if (events.length === 0) return { nodes, edges }
     
-    if (progress >= 40) {
-      const rcNode = nodes.find((n: any) => n.id === rcService)
-      if (rcNode) { rcNode.health = 'critical'; rcNode.latency = 5000 }
-    }
+    // Determine how many events to apply based on progress %
+    const eventCount = Math.floor((progress / 100) * events.length)
+    const activeEvents = events.slice(0, eventCount)
     
-    if (progress >= 60) {
-      const paymentNode = nodes.find((n: any) => n.id === 'payment-service')
-      if (paymentNode) { paymentNode.health = 'critical'; paymentNode.error_rate = 60 }
-      const rcEdge = edges.find((e: any) => e.target === rcService)
-      if (rcEdge) rcEdge.error_propagation = true
-    }
+    const serviceErrorCounts: Record<string, number> = {}
     
-    if (progress >= 80) {
-      const orderNode = nodes.find((n: any) => n.id === 'order-service')
-      const gatewayNode = nodes.find((n: any) => n.id === 'api-gateway')
-      if (orderNode) { orderNode.health = 'critical'; orderNode.error_rate = 40 }
-      if (gatewayNode) { gatewayNode.health = 'warning'; gatewayNode.error_rate = 25 }
-      edges.forEach((e: any) => {
-        if (e.target === 'payment-service' || e.target === 'order-service') e.error_propagation = true
-      })
-    }
+    activeEvents.forEach(evt => {
+      if (evt.severity === 'error' || evt.severity === 'critical') {
+        serviceErrorCounts[evt.service] = (serviceErrorCounts[evt.service] || 0) + 1
+      }
+      
+      const node = nodes.find((n: any) => n.id === evt.service)
+      if (node) {
+        if (evt.severity === 'critical') node.health = 'critical'
+        else if (evt.severity === 'error' && node.health !== 'critical') node.health = 'error'
+        else if (evt.severity === 'warning' && node.health === 'healthy') node.health = 'warning'
+        
+        if (evt.latency_ms) node.latency = Math.max(node.latency, evt.latency_ms)
+      }
+    })
+    
+    // Compute edge propagation based on target service failures
+    edges.forEach((e: any) => {
+      if (serviceErrorCounts[e.target] > 5) {
+        e.error_propagation = true
+      }
+    })
     
     return { nodes, edges }
-  }
+  }, [baseTopology, progress, events])
 
-  const simulatedTopology = deriveTopology()
+  const latestEvent = useMemo(() => {
+    if (events.length === 0) return null
+    const idx = Math.min(Math.floor((progress / 100) * events.length), events.length - 1)
+    return events[idx]
+  }, [progress, events])
 
   return (
     <motion.div 
@@ -101,9 +98,9 @@ export function IncidentReplay({ incident, baseTopology, onClose }: { incident: 
         <div>
           <h2 className="text-2xl font-black text-white tracking-tighter flex items-center">
             <FastForward className="w-6 h-6 mr-3 text-cyan-400" />
-            INCIDENT REPLAY
+            INCIDENT REPLAY ENGINE
           </h2>
-          <p className="text-cyan-500/70 text-xs font-mono tracking-widest mt-1">SIMULATING TIMELINE FOR: {incident.id}</p>
+          <p className="text-cyan-500/70 text-xs font-mono tracking-widest mt-1">SIMULATING {events.length} EVENTS FOR: {incident.id}</p>
         </div>
         <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
           <X className="w-6 h-6 text-slate-400" />
@@ -113,21 +110,26 @@ export function IncidentReplay({ incident, baseTopology, onClose }: { incident: 
       <div className="flex-1 relative">
         <TopologyGraph data={simulatedTopology} />
         
-        {/* Stage Overlay */}
-        <div className="absolute top-10 left-1/2 -translate-x-1/2 flex flex-col items-center">
-          <span className="text-[10px] font-bold text-slate-400 tracking-[0.3em] uppercase mb-2">Current Phase</span>
-          <motion.div 
-            key={currentStage}
-            initial={{ scale: 0.8, opacity: 0, y: 10 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            className={`px-6 py-3 border rounded-none font-black text-xl tracking-tight shadow-2xl backdrop-blur-md
-              ${currentStage === 0 ? 'bg-cyan-950/80 text-cyan-400 border-cyan-500/50 shadow-[0_0_30px_rgba(6,182,212,0.3)]' :
-                currentStage < 3 ? 'bg-yellow-950/80 text-yellow-400 border-yellow-500/50 shadow-[0_0_30px_rgba(234,179,8,0.3)]' :
-                'bg-fuchsia-950/80 text-fuchsia-400 border-fuchsia-500/50 shadow-[0_0_30px_rgba(217,70,239,0.3)]'
-              }`}
-          >
-            {stages[currentStage].label}
-          </motion.div>
+        {/* Latest Event Overlay */}
+        <div className="absolute top-10 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none">
+          <span className="text-[10px] font-bold text-slate-400 tracking-[0.3em] uppercase mb-2">Live Replay Feed</span>
+          <AnimatePresence mode="popLayout">
+            {latestEvent && (
+              <motion.div 
+                key={latestEvent.id}
+                initial={{ scale: 0.8, opacity: 0, y: 10 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.8, opacity: 0, y: -10 }}
+                className={`px-6 py-3 border rounded-none font-black text-sm tracking-tight shadow-2xl backdrop-blur-md max-w-xl text-center
+                  ${latestEvent.severity === 'critical' ? 'bg-fuchsia-950/80 text-fuchsia-400 border-fuchsia-500/50 shadow-[0_0_30px_rgba(217,70,239,0.3)]' :
+                    latestEvent.severity === 'error' ? 'bg-red-950/80 text-red-400 border-red-500/50 shadow-[0_0_30px_rgba(239,68,68,0.3)]' :
+                    'bg-yellow-950/80 text-yellow-400 border-yellow-500/50 shadow-[0_0_30px_rgba(234,179,8,0.3)]'
+                  }`}
+              >
+                [{latestEvent.service.toUpperCase()}] {latestEvent.message}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
       
@@ -139,15 +141,15 @@ export function IncidentReplay({ incident, baseTopology, onClose }: { incident: 
           <button onClick={() => setIsPlaying(!isPlaying)} className="p-4 bg-cyan-600 hover:bg-cyan-500 rounded-xl text-black transition-colors shadow-[0_0_15px_rgba(6,182,212,0.4)]">
             {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
           </button>
-          <button onClick={() => setSpeed(s => s === 1 ? 2 : 1)} className={`px-4 py-3 rounded-xl font-black transition-colors ${speed === 2 ? 'bg-fuchsia-500 text-black' : 'bg-white/5 text-white'}`}>
-            2x
+          <button onClick={() => setSpeed(s => s === 1 ? 2 : s === 2 ? 4 : 1)} className={`px-4 py-3 rounded-xl font-black transition-colors ${speed > 1 ? 'bg-fuchsia-500 text-black' : 'bg-white/5 text-white'}`}>
+            {speed}x
           </button>
         </div>
         
         <div className="flex-1">
           <div className="flex justify-between text-[10px] text-slate-500 font-bold tracking-widest mb-2">
-            <span>T-00:00:00</span>
-            <span>T-00:05:00</span>
+            <span>START</span>
+            <span>END ({events.length} EVENTS)</span>
           </div>
           <input 
             type="range" 

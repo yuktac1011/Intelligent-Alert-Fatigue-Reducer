@@ -5,22 +5,23 @@ import { X, BellRing, Target, ArrowRight } from 'lucide-react'
 
 export function KryvenComparison({ onClose, incident }: { onClose: () => void, incident: any }) {
   const [showWithKryven, setShowWithKryven] = useState(false)
-  const [alerts, setAlerts] = useState<string[]>([])
+  const [metrics, setMetrics] = useState<any>(null)
 
   useEffect(() => {
-    let count = 0
-    const timer = setInterval(() => {
-      count++
-      if (!showWithKryven && count < 50) {
-        setAlerts(prev => {
-          const types = ["DB Timeout", "HTTP 500", "Payment Failed", "Order Latency", "Cache Miss"]
-          const nextAlert = types[Math.floor(Math.random() * types.length)]
-          return [nextAlert, ...prev].slice(0, 15)
-        })
+    const fetchMetrics = async () => {
+      try {
+        const res = await fetch('http://localhost:8000/api/metrics/comparison')
+        const data = await res.json()
+        setMetrics(data)
+      } catch (e) {
+        console.error(e)
       }
-    }, 100)
+    }
+    fetchMetrics()
+    // Poll for updates in case events are still arriving
+    const timer = setInterval(fetchMetrics, 1000)
     return () => clearInterval(timer)
-  }, [showWithKryven])
+  }, [])
 
   return (
     <motion.div 
@@ -40,32 +41,21 @@ export function KryvenComparison({ onClose, incident }: { onClose: () => void, i
           <h2 className="text-3xl font-black text-red-500 mb-2 tracking-tighter uppercase">Without Kryven</h2>
           <p className="text-slate-400 font-mono text-sm mb-12">Raw Telemetry & Alert Fatigue</p>
           
-          <div className="flex-1 relative">
-            <div className="absolute inset-0 overflow-hidden mask-image:linear-gradient(to_bottom,black_50%,transparent_100%)">
-              <AnimatePresence>
-                {alerts.map((a, i) => (
-                  <motion.div 
-                    key={`${i}-${a}`}
-                    initial={{ opacity: 0, x: -50, scale: 0.8 }}
-                    animate={{ opacity: 1, x: 0, scale: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="p-3 mb-2 bg-red-500/10 border border-red-500/30 text-red-400 font-mono text-xs rounded-md shadow-sm"
-                  >
-                    [CRITICAL] {a}
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
+          <div className="flex-1 flex flex-col items-center justify-center text-center px-8">
+             <BellRing className="w-24 h-24 text-red-500/20 mb-6" />
+             <p className="text-slate-300 text-lg leading-relaxed">
+               Without causal intelligence, on-call engineers receive an unthrottled stream of independent alerts, requiring manual correlation across services.
+             </p>
           </div>
           
           <div className="mt-8 pt-8 border-t border-red-500/20 grid grid-cols-2 gap-4">
             <div>
               <div className="text-[10px] text-red-500/70 font-bold uppercase tracking-widest mb-1">Alerts Fired</div>
-              <div className="text-4xl font-black text-white font-mono">1,247</div>
+              <div className="text-4xl font-black text-white font-mono">{metrics?.without_kryven?.raw_alerts.toLocaleString() || '...'}</div>
             </div>
             <div>
               <div className="text-[10px] text-red-500/70 font-bold uppercase tracking-widest mb-1">PagerDuty Threads</div>
-              <div className="text-4xl font-black text-white font-mono">47</div>
+              <div className="text-4xl font-black text-white font-mono">{metrics?.without_kryven?.pagerduty_threads || '...'}</div>
             </div>
           </div>
         </div>
@@ -91,17 +81,17 @@ export function KryvenComparison({ onClose, incident }: { onClose: () => void, i
                 </div>
                 
                 <h3 className="text-2xl font-black text-white tracking-tight mb-8">
-                  {incident?.title || 'PostgreSQL Connection Pool Exhaustion'}
+                  {incident?.title || 'System Degradation'}
                 </h3>
                 
                 <div className="grid grid-cols-2 gap-6">
                   <div>
                     <div className="text-[10px] text-cyan-500/70 font-bold uppercase tracking-widest mb-1">Root Cause</div>
-                    <div className="text-2xl font-black text-cyan-400 font-mono">{incident?.root_cause?.service || 'postgresql'}</div>
+                    <div className="text-2xl font-black text-cyan-400 font-mono">{incident?.root_cause?.service || 'Calculating...'}</div>
                   </div>
                   <div>
                     <div className="text-[10px] text-cyan-500/70 font-bold uppercase tracking-widest mb-1">Confidence</div>
-                    <div className="text-2xl font-black text-white font-mono">{incident?.confidence?.toFixed(1) || '91.8'}%</div>
+                    <div className="text-2xl font-black text-white font-mono">{incident?.confidence ? `${incident.confidence.toFixed(1)}%` : '--'}</div>
                   </div>
                 </div>
               </motion.div>
@@ -112,12 +102,12 @@ export function KryvenComparison({ onClose, incident }: { onClose: () => void, i
             <div>
               <div className="text-[10px] text-cyan-500/70 font-bold uppercase tracking-widest mb-1">Noise Reduction</div>
               <div className="text-4xl font-black text-cyan-400 font-mono drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]">
-                {incident ? (incident.noise_reduction_ratio * 100).toFixed(1) : '96.8'}%
+                {metrics ? (metrics.with_kryven.noise_reduction_ratio * 100).toFixed(1) : '...'}%
               </div>
             </div>
             <div>
               <div className="text-[10px] text-cyan-500/70 font-bold uppercase tracking-widest mb-1">Actionable Incident</div>
-              <div className="text-4xl font-black text-white font-mono">1</div>
+              <div className="text-4xl font-black text-white font-mono">{metrics?.with_kryven?.actionable_incidents || '...'}</div>
             </div>
           </div>
         </div>

@@ -10,6 +10,7 @@ from engine.correlation import correlation_engine
 from engine.topology import topology_engine
 from engine.root_cause import root_cause_engine
 from engine.incident_graph import incident_graph_engine
+from engine.cooldown import cooldown_engine
 
 router = APIRouter()
 
@@ -159,6 +160,12 @@ async def get_incident(incident_id: str):
 async def get_incident_timeline(incident_id: str):
     return timeline_db.get(incident_id, [])
 
+@router.get("/incidents/{incident_id}/events")
+async def get_incident_events(incident_id: str):
+    # In this prototype, we return all events in the events_db sorted by timestamp.
+    # In a full app, we would query the DB for events linked to this incident's cluster.
+    return sorted([json.loads(e.json()) for e in events_db], key=lambda x: x["timestamp"])
+
 @router.get("/topology")
 async def get_topology():
     return topology_engine.get_topology()
@@ -197,6 +204,40 @@ async def get_noise_metrics():
         "active_incidents": len([i for i in incidents_db.values() if i.status == 'active'])
     }
 
+@router.get("/metrics/comparison")
+async def get_comparison_metrics():
+    raw_alerts = len(events_db)
+    unique_fps = len(fingerprinter.known_fingerprints)
+    noise_reduction = 1.0 - (float(unique_fps) / float(raw_alerts)) if raw_alerts > 0 else 0.0
+    
+    # "Without Kryven" threads = unique fingerprints (roughly what PagerDuty would group natively)
+    pd_threads = max(1, unique_fps) if raw_alerts > 0 else 0
+    
+    return {
+        "without_kryven": {
+            "raw_alerts": raw_alerts,
+            "notifications": raw_alerts // 4 if raw_alerts > 0 else 0, # simulated un-throttled notifications
+            "pagerduty_threads": pd_threads
+        },
+        "with_kryven": {
+            "actionable_incidents": len(incidents_db),
+            "notifications": len(incidents_db),
+            "noise_reduction_ratio": noise_reduction
+        }
+    }
+
+@router.get("/cooldown")
+async def get_cooldown_state():
+    return {
+        "policies": [
+            {
+                **p.dict(),
+                "last_seen": cooldown_engine.last_seen[key].isoformat() if key in cooldown_engine.last_seen else None
+            }
+            for key, p in cooldown_engine.policies.items()
+        ]
+    }
+
 from schemas import Simulation
 from pydantic import BaseModel
 
@@ -221,6 +262,21 @@ async def simulate_what_if(req: WhatIfRequest):
             estimated_incident_duration_sec=int(base_duration * reduction_factor),
             estimated_affected_users_percent=31.0 * reduction_factor,
             estimated_service_degradation="Reduced cascading latency across Payment and Order services."
+        )
+        return sim
+        
+    elif req.scenario == "timeout-tuning":
+        timeout = req.parameters.get("timeout_ms", 5000)
+        # If timeout is low (fast fail), less cascading exhaustion
+        reduction_factor = min(1.0, float(timeout) / 5000.0)
+        
+        sim = Simulation(
+            scenario_id="timeout_tuning",
+            parameters=req.parameters,
+            estimated_failed_requests=int(base_failed_requests * (0.8 + (reduction_factor * 0.2))),
+            estimated_incident_duration_sec=int(base_duration * reduction_factor),
+            estimated_affected_users_percent=max(5.0, 31.0 * reduction_factor),
+            estimated_service_degradation="Faster circuit breaking prevents full API Gateway saturation."
         )
         return sim
         

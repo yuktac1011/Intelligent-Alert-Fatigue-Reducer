@@ -60,16 +60,18 @@ export function EvidenceExplorer({ rootCause }: { rootCause: any }) {
   
   return (
     <div className="bg-[#050505] border border-blue-500/30 p-6 flex flex-col h-full shadow-[inset_0_0_50px_rgba(59,130,246,0.05)]">
-      <div className="flex items-center justify-between mb-8 border-b border-blue-500/20 pb-4">
-        <div className="flex items-center space-x-3">
-          <Search className="w-5 h-5 text-blue-500" />
-          <h3 className="text-sm font-black text-white tracking-[0.2em] uppercase">Causal Evidence</h3>
+      <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between mb-6 xl:mb-8 border-b border-blue-500/20 pb-4 gap-4">
+        <div className="flex items-center space-x-2 xl:space-x-3">
+          <Search className="w-4 h-4 xl:w-5 xl:h-5 text-blue-500 shrink-0" />
+          <h3 className="text-xs xl:text-sm font-black text-white tracking-widest uppercase leading-tight">Causal Evidence</h3>
         </div>
-        <div className="flex items-baseline space-x-2">
-          <span className="text-3xl font-black text-blue-400 font-mono drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]">
+        <div className="flex flex-col items-start xl:items-end shrink-0 max-w-full">
+          <span className="text-2xl xl:text-3xl font-black text-blue-400 font-mono drop-shadow-[0_0_10px_rgba(59,130,246,0.5)] leading-none">
             {confidence.toFixed(1)}%
           </span>
-          <span className="text-[9px] text-blue-500/70 font-bold uppercase tracking-widest">Total Confidence</span>
+          <span className="text-[8px] xl:text-[9px] text-blue-500/70 font-bold uppercase tracking-wider mt-1 text-left xl:text-right flex-wrap break-words leading-tight max-w-[90px] xl:max-w-none">
+            Total Confidence
+          </span>
         </div>
       </div>
       

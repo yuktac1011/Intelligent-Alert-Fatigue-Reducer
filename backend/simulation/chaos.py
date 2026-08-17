@@ -104,7 +104,29 @@ class ChaosSimulator:
 
     # Stubs for the remaining 6 scenarios to prevent the file from getting too massive for the prototype
     async def _scenario_network_partition(self):
-        self.is_running = False
+        try:
+            # Stage 1: Network packet loss / latency to Kafka
+            topology_engine.update_edge_metrics("order-service", "kafka", dep_health="warning")
+            for i in range(15):
+                await self._emit_event("order-service", f"ord-pod-{i%3}", "warning", "warning", "High latency connecting to kafka-broker-0", latency=2000, ts_offset_ms=i*100)
+            await asyncio.sleep(1)
+            
+            # Stage 2: Complete partition
+            topology_engine.update_node_metrics("kafka", health="critical")
+            topology_engine.update_edge_metrics("order-service", "kafka", error_prop=True, dep_health="critical")
+            for i in range(25):
+                await self._emit_event("order-service", f"ord-pod-{i%5}", "error", "critical", "Connection refused: kafka-broker-0 (Network partition?)", status=503, ts_offset_ms=1500 + i*50)
+            await asyncio.sleep(1)
+            
+            # Stage 3: Order service buffer full, begins failing
+            topology_engine.update_node_metrics("order-service", error_rate=45, health="critical")
+            topology_engine.update_edge_metrics("api-gateway", "order-service", error_prop=True)
+            for i in range(30):
+                await self._emit_event("order-service", f"ord-pod-{i%8}", "error", "error", "Message buffer exhausted. Dropping events.", ts_offset_ms=2500 + i*40)
+                await self._emit_event("api-gateway", f"gw-{i%3}", "error", "critical", "Order service unavailable", status=503, ts_offset_ms=2520 + i*40)
+                await asyncio.sleep(0.05)
+        finally:
+            self.is_running = False
     async def _scenario_traffic_spike(self):
         self.is_running = False
     async def _scenario_api_latency(self):
