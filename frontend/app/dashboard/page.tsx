@@ -79,8 +79,8 @@ export default function Dashboard() {
     <div className="h-screen bg-[#050505] text-slate-200 flex flex-col font-sans overflow-hidden">
       
       {/* Intense Top Header */}
-      <header className="border-b-2 border-cyan-500/30 bg-black/60 backdrop-blur-xl px-6 py-4 flex items-center justify-between sticky top-0 z-50">
-        <div className="flex items-center space-x-4">
+      <header className="border-b-2 border-cyan-500/30 bg-black/60 backdrop-blur-xl px-4 md:px-6 py-4 flex items-center justify-between sticky top-0 z-50">
+        <div className="flex items-center space-x-4 shrink-0">
           <motion.div 
             animate={{ rotate: 360 }}
             transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
@@ -96,16 +96,16 @@ export default function Dashboard() {
           </div>
         </div>
         
-        <div className="flex bg-black/50 rounded-lg p-1 border border-white/5 backdrop-blur-md">
+        <div className="flex overflow-x-auto scrollbar-hide bg-black/50 rounded-lg p-1 border border-white/5 backdrop-blur-md mx-2 md:mx-4">
           <button 
             onClick={() => setActiveTab('live')}
-            className={`px-6 py-2 rounded-md text-sm font-bold uppercase tracking-widest transition-all ${activeTab === 'live' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.4)]' : 'text-slate-500 hover:text-cyan-300'}`}
+            className={`px-4 md:px-6 py-2 rounded-md text-xs md:text-sm font-bold uppercase tracking-widest transition-all whitespace-nowrap shrink-0 ${activeTab === 'live' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.4)]' : 'text-slate-500 hover:text-cyan-300'}`}
           >
             Topology
           </button>
           <button 
             onClick={() => setActiveTab('incidents')}
-            className={`px-6 py-2 rounded-md text-sm font-bold uppercase tracking-widest transition-all ${activeTab === 'incidents' ? 'bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/50 shadow-[0_0_15px_rgba(217,70,239,0.4)]' : 'text-slate-500 hover:text-fuchsia-300'} flex items-center`}
+            className={`px-4 md:px-6 py-2 rounded-md text-xs md:text-sm font-bold uppercase tracking-widest transition-all whitespace-nowrap shrink-0 ${activeTab === 'incidents' ? 'bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/50 shadow-[0_0_15px_rgba(217,70,239,0.4)]' : 'text-slate-500 hover:text-fuchsia-300'} flex items-center`}
           >
             Incidents
             <AnimatePresence>
@@ -121,14 +121,14 @@ export default function Dashboard() {
           </button>
           <button 
             onClick={() => setActiveTab('chaos')}
-            className={`px-6 py-2 rounded-md text-sm font-bold uppercase tracking-widest transition-all ${activeTab === 'chaos' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/50 shadow-[0_0_15px_rgba(234,179,8,0.4)]' : 'text-slate-500 hover:text-yellow-300'}`}
+            className={`px-4 md:px-6 py-2 rounded-md text-xs md:text-sm font-bold uppercase tracking-widest transition-all whitespace-nowrap shrink-0 ${activeTab === 'chaos' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/50 shadow-[0_0_15px_rgba(234,179,8,0.4)]' : 'text-slate-500 hover:text-yellow-300'}`}
           >
             Chaos Lab
           </button>
           
           <button 
             onClick={() => setActiveTab('cooldown')}
-            className={`px-4 py-2 rounded-md text-sm font-bold uppercase tracking-widest transition-all ${activeTab === 'cooldown' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.4)]' : 'text-slate-500 hover:text-cyan-300'} flex items-center`}
+            className={`px-4 md:px-6 py-2 rounded-md text-xs md:text-sm font-bold uppercase tracking-widest transition-all whitespace-nowrap shrink-0 ${activeTab === 'cooldown' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.4)]' : 'text-slate-500 hover:text-cyan-300'} flex items-center`}
           >
             <Shield className="w-4 h-4 mr-2" />
             Cooldown
@@ -136,24 +136,24 @@ export default function Dashboard() {
           
           <button 
             onClick={() => setActiveTab('what-if')}
-            className={`px-4 py-2 rounded-md text-sm font-bold uppercase tracking-widest transition-all ${activeTab === 'what-if' ? 'bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/50 shadow-[0_0_15px_rgba(217,70,239,0.4)]' : 'text-slate-500 hover:text-fuchsia-300'} flex items-center`}
+            className={`px-4 md:px-6 py-2 rounded-md text-xs md:text-sm font-bold uppercase tracking-widest transition-all whitespace-nowrap shrink-0 ${activeTab === 'what-if' ? 'bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/50 shadow-[0_0_15px_rgba(217,70,239,0.4)]' : 'text-slate-500 hover:text-fuchsia-300'} flex items-center`}
           >
             <Beaker className="w-4 h-4 mr-2" />
             What If
           </button>
           
-          <div className="w-px h-6 bg-white/10 mx-2 self-center"></div>
+          <div className="w-px h-6 bg-white/10 mx-2 self-center shrink-0"></div>
           
           <button 
             onClick={() => setShowComparison(true)}
-            className="px-6 py-2 rounded-md text-sm font-bold uppercase tracking-widest text-slate-500 hover:text-white flex items-center transition-all"
+            className="px-4 md:px-6 py-2 rounded-md text-xs md:text-sm font-bold uppercase tracking-widest text-slate-500 hover:text-white flex items-center transition-all whitespace-nowrap shrink-0"
           >
             <SplitSquareHorizontal className="w-4 h-4 mr-2" />
             Compare
           </button>
         </div>
         
-        <div className="flex items-center space-x-3 px-4 py-2 bg-black/80 border border-cyan-500/30 rounded-full shadow-[0_0_20px_rgba(6,182,212,0.2)]">
+        <div className="flex items-center space-x-3 px-4 py-2 bg-black/80 border border-cyan-500/30 rounded-full shadow-[0_0_20px_rgba(6,182,212,0.2)] shrink-0 hidden md:flex">
           <motion.div 
             animate={{ scale: [1, 1.5, 1], opacity: [1, 0.5, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
