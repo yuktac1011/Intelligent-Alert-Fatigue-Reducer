@@ -166,7 +166,7 @@ export default function Dashboard() {
       </header>
 
       {/* Extreme KPI Strip */}
-      <div className="grid grid-cols-5 gap-0 border-b border-white/5 bg-black/40">
+      <div className="flex flex-row overflow-x-auto scrollbar-hide border-b border-white/5 bg-black/40 w-full">
         <KPIBox title="RAW NOISE" value={metrics.raw_alerts.toLocaleString()} color="text-slate-300" />
         <KPIBox title="COMPRESSION" value={`${(metrics.noise_reduction_ratio * 100).toFixed(1)}%`} color="text-cyan-400" glow="shadow-[inset_0_0_30px_rgba(6,182,212,0.15)]" />
         <KPIBox title="FINGERPRINTS" value={metrics.unique_fingerprints} color="text-yellow-400" />
@@ -279,7 +279,7 @@ export default function Dashboard() {
                           <div className="col-span-1 xl:h-[650px] min-h-[500px]">
                             <EvidenceExplorer rootCause={inc.root_cause} />
                           </div>
-                          <div className="col-span-1 xl:h-[650px] min-h-[500px] overflow-hidden bg-black/80 backdrop-blur-md border border-fuchsia-500/30">
+                          <div className="col-span-1 xl:h-[650px] min-h-[500px] bg-black/80 backdrop-blur-md border border-fuchsia-500/30">
                             <IncidentView incident={inc} compact={true} />
                           </div>
                         </div>
@@ -317,9 +317,9 @@ export default function Dashboard() {
 
 function KPIBox({ title, value, color, glow = '' }: { title: string, value: any, color: string, glow?: string }) {
   return (
-    <div className={`p-6 border-r border-white/5 flex flex-col justify-center ${glow}`}>
-      <p className="text-[10px] text-slate-500 font-bold tracking-[0.2em] mb-2">{title}</p>
-      <p className={`text-4xl font-black tracking-tighter font-mono ${color}`}>{value}</p>
+    <div className={`p-4 md:p-6 border-r border-white/5 flex flex-col justify-center flex-1 min-w-[160px] md:min-w-[200px] shrink-0 ${glow}`}>
+      <p className="text-[10px] text-slate-500 font-bold tracking-[0.2em] mb-2 truncate">{title}</p>
+      <p className={`text-3xl md:text-4xl font-black tracking-tighter font-mono truncate ${color}`}>{value}</p>
     </div>
   )
 }

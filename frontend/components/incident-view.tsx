@@ -40,7 +40,7 @@ export function IncidentView({ incident, compact = false }: { incident: any, com
         {incident.root_cause && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-            className="bg-black border border-white/10 rounded-none overflow-hidden group hover:border-blue-500/50 transition-colors"
+            className="bg-black border border-white/10 rounded-none group hover:border-blue-500/50 transition-colors"
           >
             <div className="bg-[#050505] px-5 py-4 border-b border-white/5 flex items-center justify-between">
               <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] flex items-center">
@@ -70,16 +70,19 @@ export function IncidentView({ incident, compact = false }: { incident: any, com
         {incident.blast_radius && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-            className="bg-black border border-white/10 rounded-none overflow-hidden group hover:border-yellow-500/50 transition-colors"
+            className="bg-black border border-white/10 rounded-none group hover:border-yellow-500/50 transition-colors"
           >
             <div className="bg-[#050505] px-5 py-4 border-b border-white/5 flex items-center justify-between">
               <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] flex items-center">
                 <AlertCircle className="w-4 h-4 mr-3 text-yellow-500" />
                 Blast Radius
               </h3>
-              <div className="group relative">
+              <div className="group/tooltip relative flex items-center">
                 <Info className="w-4 h-4 text-slate-600 hover:text-slate-300 cursor-help" />
-                <div className="absolute right-0 top-6 w-64 bg-slate-900 border border-slate-700 p-3 text-xs text-slate-300 hidden group-hover:block z-50 shadow-xl rounded-md">
+                <div 
+                  className="absolute right-0 w-[180px] sm:w-64 bg-slate-900 border border-slate-700 p-3 text-xs text-slate-300 hidden group-hover/tooltip:block z-[100] shadow-xl rounded-md pointer-events-none"
+                  style={{ bottom: 'calc(100% + 8px)' }}
+                >
                   Calculated based on {incident.blast_radius.affected_services} downstream dependencies. User impact is derived from the proportion of traffic passing through degraded endpoints over the last {incident.blast_radius.dependency_depth} minutes.
                 </div>
               </div>
@@ -99,7 +102,7 @@ export function IncidentView({ incident, compact = false }: { incident: any, com
                   Failed Requests <Info className="w-3 h-3 ml-1 opacity-50" />
                 </p>
                 <p className="text-3xl font-black text-fuchsia-500 font-mono drop-shadow-[0_0_10px_rgba(217,70,239,0.5)]">{incident.blast_radius.estimated_failed_requests.toLocaleString()}</p>
-                <div className="absolute left-0 bottom-14 w-48 bg-slate-900 border border-slate-700 p-2 text-[10px] text-slate-300 hidden group-hover/metric:block z-50">
+                <div className="absolute right-0 bottom-14 w-[150px] sm:w-48 bg-slate-900 border border-slate-700 p-2 text-[10px] text-slate-300 hidden group-hover/metric:block z-[100]">
                   Total HTTP 5xx responses served across all affected endpoints during this incident.
                 </div>
               </div>
@@ -132,7 +135,7 @@ export function IncidentView({ incident, compact = false }: { incident: any, com
         {incident.recommendation && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-            className="bg-black border border-white/10 rounded-none overflow-hidden group hover:border-cyan-500/50 transition-colors"
+            className="bg-black border border-white/10 rounded-none group hover:border-cyan-500/50 transition-colors"
           >
             <div className="bg-[#050505] px-5 py-4 border-b border-white/5 flex items-center justify-between">
               <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] flex items-center">
